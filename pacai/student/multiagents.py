@@ -2,6 +2,8 @@ import random
 
 from pacai.agents.base import BaseAgent
 from pacai.agents.search.multiagent import MultiAgentSearchAgent
+from pacai.core.distance import manhattan, maze
+
 
 class ReflexAgent(BaseAgent):
     """
@@ -31,10 +33,13 @@ class ReflexAgent(BaseAgent):
         legalMoves = gameState.getLegalActions()
 
         # Choose one of the best actions.
-        scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
+        scores = [self.evaluationFunction(
+            gameState, action) for action in legalMoves]
         bestScore = max(scores)
-        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best.
+        bestIndices = [index for index in range(
+            len(scores)) if scores[index] == bestScore]
+        # Pick randomly among the best.
+        chosenIndex = random.choice(bestIndices)
 
         return legalMoves[chosenIndex]
 
@@ -51,14 +56,32 @@ class ReflexAgent(BaseAgent):
         successorGameState = currentGameState.generatePacmanSuccessor(action)
 
         # Useful information you can extract.
-        # newPosition = successorGameState.getPacmanPosition()
-        # oldFood = currentGameState.getFood()
-        # newGhostStates = successorGameState.getGhostStates()
+        newPosition = successorGameState.getPacmanPosition()
+        oldFood = currentGameState.getFood()
+        newGhostStates = successorGameState.getGhostStates()
         # newScaredTimes = [ghostState.getScaredTimer() for ghostState in newGhostStates]
 
         # *** Your Code Here ***
+        for ghost in newGhostStates:
+            ghostDistance = manhattan(newPosition, ghost._position)
 
-        return successorGameState.getScore()
+        foodDistances = []
+        for food in oldFood:
+            if food:
+                d = manhattan(newPosition, food)
+                foodDistances.append((d, food))
+        foodDistances.sort()
+
+        farthestFood = foodDistances[foodDistances.__len__() - 1][0]
+        closestFood = foodDistances[0][0]
+
+        if ghostDistance < 2:
+            eval = ghostDistance
+        else:
+            eval = closestFood
+
+        return eval
+
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
@@ -90,6 +113,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
 
+
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     A minimax agent with alpha-beta pruning.
@@ -104,6 +128,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -122,6 +147,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
 
+
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable evaluation function.
@@ -130,6 +156,7 @@ def betterEvaluationFunction(currentGameState):
     """
 
     return currentGameState.getScore()
+
 
 class ContestAgent(MultiAgentSearchAgent):
     """
