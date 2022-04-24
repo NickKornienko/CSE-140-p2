@@ -55,30 +55,35 @@ class ReflexAgent(BaseAgent):
 
         successorGameState = currentGameState.generatePacmanSuccessor(action)
 
-        # Useful information you can extract.
-        newPosition = successorGameState.getPacmanPosition()
-        oldFood = currentGameState.getFood()
+        # position needs to be cast as an int to work with maze()
+        xPos, yPos = successorGameState.getPacmanPosition()
+        newPosition = (int(xPos), int(yPos))
+
+        oldFood = currentGameState.getFood().asList()
         newGhostStates = successorGameState.getGhostStates()
         # newScaredTimes = [ghostState.getScaredTimer() for ghostState in newGhostStates]
 
-        # *** Your Code Here ***
+        # find distances to each ghost
+        # manhattan distance is used since we only care is ghosts are very close
+        ghostDistances = []
         for ghost in newGhostStates:
-            ghostDistance = manhattan(newPosition, ghost._position)
+            ghostDistances.append(manhattan(newPosition, ghost._position))
 
+        # find the distance to the closest food and return it as eval
+        # maze distance is used as it is a better for accounting for walls
+        # distance is negated since smaller numbers are defined as better options
         foodDistances = []
         for food in oldFood:
             if food:
-                d = manhattan(newPosition, food)
-                foodDistances.append((d, food))
+                d = maze(newPosition, food, currentGameState)
+                foodDistances.append(d)
         foodDistances.sort()
+        eval = -foodDistances[0]
 
-        farthestFood = foodDistances[foodDistances.__len__() - 1][0]
-        closestFood = foodDistances[0][0]
-
-        if ghostDistance < 2:
-            eval = ghostDistance
-        else:
-            eval = closestFood
+        # avoid running into ghosts at all costs
+        for ghostDistance in ghostDistances:
+            if ghostDistance < 2:
+                eval = -999999
 
         return eval
 
