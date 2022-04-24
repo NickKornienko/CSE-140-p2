@@ -2,7 +2,7 @@ import random
 
 from pacai.agents.base import BaseAgent
 from pacai.agents.search.multiagent import MultiAgentSearchAgent
-from pacai.core.distance import manhattan, maze
+from pacai.core.distance import manhattan
 
 
 class ReflexAgent(BaseAgent):
@@ -64,18 +64,16 @@ class ReflexAgent(BaseAgent):
         # newScaredTimes = [ghostState.getScaredTimer() for ghostState in newGhostStates]
 
         # find distances to each ghost
-        # manhattan distance is used since we only care is ghosts are very close
         ghostDistances = []
         for ghost in newGhostStates:
             ghostDistances.append(manhattan(newPosition, ghost._position))
 
         # find the distance to the closest food and return it as eval
-        # maze distance is used as it is a better for accounting for walls
         # distance is negated since smaller numbers are defined as better options
         foodDistances = []
         for food in oldFood:
             if food:
-                d = maze(newPosition, food, currentGameState)
+                d = manhattan(newPosition, food)
                 foodDistances.append(d)
         foodDistances.sort()
         eval = -foodDistances[0]
