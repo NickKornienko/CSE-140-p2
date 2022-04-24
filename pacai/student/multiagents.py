@@ -55,10 +55,7 @@ class ReflexAgent(BaseAgent):
 
         successorGameState = currentGameState.generatePacmanSuccessor(action)
 
-        # position needs to be cast as an int to work with maze()
-        xPos, yPos = successorGameState.getPacmanPosition()
-        newPosition = (int(xPos), int(yPos))
-
+        newPosition = successorGameState.getPacmanPosition()
         oldFood = currentGameState.getFood().asList()
         newGhostStates = successorGameState.getGhostStates()
         # newScaredTimes = [ghostState.getScaredTimer() for ghostState in newGhostStates]
