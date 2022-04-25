@@ -3,7 +3,7 @@ import random
 
 from pacai.agents.base import BaseAgent
 from pacai.agents.search.multiagent import MultiAgentSearchAgent
-from pacai.core.distance import manhattan
+from pacai.core.distance import manhattan, maze
 from pacai.core.directions import Directions
 
 
@@ -357,7 +357,45 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: < write something here so we know what you did >
     """
 
-    return currentGameState.getScore()
+    position = currentGameState.getPacmanPosition()
+    foodList = currentGameState.getFood().asList()
+    ghosts = currentGameState.getGhostStates()
+    capsules = currentGameState.getCapsules()
+
+    # find distances to each ghost
+    ghostDistances = []
+    for ghost in ghosts:
+        ghostDistances.append(manhattan(position, ghost._position))
+
+    # finished eating food, done
+    if not foodList:
+        return currentGameState.getScore()
+
+    # find distances to capsules
+    capsuleDistances = []
+    for capsule in capsules:
+        capsuleDistances.append(manhattan(position, capsule))
+
+    # find the distance to the closest food and return it as eval
+    # distance is negated since smaller numbers are defined as better options
+    foodDistances = []
+    for food in foodList:
+        foodDistances.append(manhattan(position, food))
+
+    # consider capsules first as they have a higher value
+    if capsuleDistances:
+        distances = capsuleDistances
+    else:
+        distances = foodDistances
+
+    eval = -min(distances)
+
+    # avoid running into ghosts at all costs
+    for ghostDistance in ghostDistances:
+        if ghostDistance < 1:
+            eval = -999999
+
+    return currentGameState.getScore() + eval
 
 
 class ContestAgent(MultiAgentSearchAgent):
