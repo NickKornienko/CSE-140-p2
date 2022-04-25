@@ -188,17 +188,94 @@ class MinimaxAgent(MultiAgentSearchAgent):
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     A minimax agent with alpha-beta pruning.
-
-    Method to Implement:
-
-    `pacai.agents.base.BaseAgent.getAction`:
-    Returns the minimax action from the current gameState using
-    `pacai.agents.search.multiagent.MultiAgentSearchAgent.getTreeDepth`
-    and `pacai.agents.search.multiagent.MultiAgentSearchAgent.getEvaluationFunction`.
     """
 
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
+
+    def getAction(self, gameState):
+        """
+        Returns the minimax action from the current gameState using
+        `pacai.agents.search.multiagent.MultiAgentSearchAgent.getTreeDepth`
+        and `pacai.agents.search.multiagent.MultiAgentSearchAgent.getEvaluationFunction`.
+        """
+
+        # find max for pacman
+        _, action = self.maxValue(gameState, 0, 0, -inf, inf)
+        return action
+
+    def maxValue(self, gameState, agent, depth, alpha, beta):
+        """
+        Maximize for pacman's turn with a-B pruning
+        """
+        legalActions = gameState.getLegalActions(agent)
+
+        if Directions.STOP in legalActions:
+            legalActions.remove(Directions.STOP)
+
+        # max depth reached or no valid actions left, return eval func
+        if depth == self.getTreeDepth() or not legalActions:
+            return self._evaluationFunction(gameState), None
+
+        bestValue = -inf
+        bestAction = None
+        # find action with max value
+        for action in legalActions:
+            successorGameState = gameState.generateSuccessor(agent, action)
+            nextAgent = (agent + 1) % gameState.getNumAgents()
+
+            # call max/min depending on if next agent is pacman or ghost
+            if nextAgent == 0:
+                value, _ = self.maxValue(
+                    successorGameState, nextAgent, depth + 1, alpha, beta)
+            else:
+                value, _ = self.minValue(
+                    successorGameState, nextAgent, depth, alpha, beta)
+
+            if value > bestValue:
+                bestValue, bestAction = value, action
+                alpha = max(alpha, value)
+
+            if value >= beta:
+                return value, action
+
+        return bestValue, bestAction
+
+    def minValue(self, gameState, agent, depth, alpha, beta):
+        """
+        Minimize for ghosts' turn with a-B prunin
+        """
+        legalActions = gameState.getLegalActions(agent)
+        if Directions.STOP in legalActions:
+            legalActions.remove(Directions.STOP)
+
+        # max depth reached or no valid actions left, return eval func
+        if depth == self.getTreeDepth() or not legalActions:
+            return self._evaluationFunction(gameState), None
+
+        bestValue = inf
+        bestAction = None
+        # find action with max value
+        for action in legalActions:
+            successorGameState = gameState.generateSuccessor(agent, action)
+            nextAgent = (agent + 1) % gameState.getNumAgents()
+
+            # call max/min depending on if next agent is pacman or ghost
+            if nextAgent == 0:
+                value, _ = self.maxValue(
+                    successorGameState, nextAgent, depth + 1, alpha, beta)
+            else:
+                value, _ = self.minValue(
+                    successorGameState, nextAgent, depth, alpha, beta)
+
+            if value < bestValue:
+                bestValue, bestAction = value, action
+                b = min(beta, value)
+
+            if value <= alpha:
+                return value, action
+
+        return bestValue, bestAction
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
