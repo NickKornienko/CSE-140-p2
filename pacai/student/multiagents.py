@@ -270,7 +270,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             if value < bestValue:
                 bestValue, bestAction = value, action
-                b = min(beta, value)
+                beta = min(beta, value)
 
             if value <= alpha:
                 return value, action
@@ -345,8 +345,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         if agent == 0:
             expectedValue = max(values)
         else:
-            expectedValue = (float(sum(values)) /
-                             float(len(legalActions)))
+            expectedValue = (float(sum(values)) / float(len(legalActions)))
 
         return expectedValue
 
