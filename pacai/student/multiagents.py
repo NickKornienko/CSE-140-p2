@@ -1,3 +1,4 @@
+from cmath import inf
 import random
 
 from pacai.agents.base import BaseAgent
@@ -101,17 +102,77 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     `pacai.core.directions.Directions.STOP`:
     The stop direction, which is always legal, but you may not want to include in your search.
-
-    Method to Implement:
-
-    `pacai.agents.base.BaseAgent.getAction`:
-    Returns the minimax action from the current gameState using
-    `pacai.agents.search.multiagent.MultiAgentSearchAgent.getTreeDepth`
-    and `pacai.agents.search.multiagent.MultiAgentSearchAgent.getEvaluationFunction`.
     """
 
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
+
+    def getAction(self, gameState):
+        """
+        Returns the minimax action from the current gameState using
+        `pacai.agents.search.multiagent.MultiAgentSearchAgent.getTreeDepth`
+        and `pacai.agents.search.multiagent.MultiAgentSearchAgent.getEvaluationFunction`.
+        """
+
+        # find max for pacman
+        _, action = self.maxValue(gameState, 0, 0)
+        return action
+
+    def maxValue(self, gameState, agent, depth):
+        """
+        Maximize for pacman's turn
+        """
+        # max depth reached or no valid actions left, return eval func
+        if depth == self.getTreeDepth() or not gameState.getLegalActions(agent):
+            return self._evaluationFunction(gameState), None
+
+        bestValue = -inf
+        bestAction = None
+        # find action with max value
+        for action in gameState.getLegalActions(agent):
+            successorGameState = gameState.generateSuccessor(agent, action)
+            nextAgent = (agent + 1) % gameState.getNumAgents()
+
+            # call max/min depending on if next agent is pacman or ghost
+            if nextAgent == 0:
+                value, _ = self.maxValue(
+                    successorGameState, nextAgent, depth + 1)
+            else:
+                value, _ = self.minValue(
+                    successorGameState, nextAgent, depth)
+
+            if value > bestValue:
+                bestValue, bestAction = value, action
+
+        return bestValue, bestAction
+
+    def minValue(self, gameState, agent, depth):
+        """
+        Minimize for ghosts' turn
+        """
+        # max depth reached or no valid actions left, return eval func
+        if depth == self.getTreeDepth() or not gameState.getLegalActions(agent):
+            return self._evaluationFunction(gameState), None
+
+        bestValue = inf
+        bestAction = None
+        # find action with max value
+        for action in gameState.getLegalActions(agent):
+            successorGameState = gameState.generateSuccessor(agent, action)
+            nextAgent = (agent + 1) % gameState.getNumAgents()
+
+            # call max/min depending on if next agent is pacman or ghost
+            if nextAgent == 0:
+                value, _ = self.maxValue(
+                    successorGameState, nextAgent, depth + 1)
+            else:
+                value, _ = self.minValue(
+                    successorGameState, nextAgent, depth)
+
+            if value < bestValue:
+                bestValue, bestAction = value, action
+
+        return bestValue, bestAction
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -152,7 +213,7 @@ def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable evaluation function.
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: < write something here so we know what you did >
     """
 
     return currentGameState.getScore()
@@ -165,8 +226,8 @@ class ContestAgent(MultiAgentSearchAgent):
     You can use any method you want and search to any depth you want.
     Just remember that the mini-contest is timed, so you have to trade off speed and computation.
 
-    Ghosts don't behave randomly anymore, but they aren't perfect either -- they'll usually
-    just make a beeline straight towards Pacman (or away if they're scared!)
+    Ghosts don't behave randomly anymore, but they aren't perfect either - - they'll usually
+    just make a beeline straight towards Pacman(or away if they're scared!)
 
     Method to Implement:
 
