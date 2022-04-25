@@ -283,17 +283,72 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     An expectimax agent.
 
     All ghosts should be modeled as choosing uniformly at random from their legal moves.
-
-    Method to Implement:
-
-    `pacai.agents.base.BaseAgent.getAction`:
-    Returns the expectimax action from the current gameState using
-    `pacai.agents.search.multiagent.MultiAgentSearchAgent.getTreeDepth`
-    and `pacai.agents.search.multiagent.MultiAgentSearchAgent.getEvaluationFunction`.
     """
 
     def __init__(self, index, **kwargs):
         super().__init__(index, **kwargs)
+
+    def getAction(self, gameState):
+        """
+        Returns the minimax action from the current gameState using
+        `pacai.agents.search.multiagent.MultiAgentSearchAgent.getTreeDepth`
+        and `pacai.agents.search.multiagent.MultiAgentSearchAgent.getEvaluationFunction`.
+        """
+
+        legalActions = gameState.getLegalActions(0)
+        if Directions.STOP in legalActions:
+            legalActions.remove(Directions.STOP)
+
+        # return stop if there are no legal options (not reached in q4)
+        if not legalActions:
+            return Directions.STOP
+
+        # find max for pacman
+        bestValue = -inf
+        bestAction = None
+
+        # for each action find best expected score, return best action
+        for action in legalActions:
+            successorGameState = gameState.generateSuccessor(0, action)
+            expectedValue = self.expectimaxValue(successorGameState, 1, 0)
+
+            if expectedValue > bestValue:
+                bestValue, bestAction = expectedValue, action
+
+        return bestAction
+
+    def expectimaxValue(self, gameState, agent, depth):
+        """
+        Expected value for ghosts' turn
+        """
+        legalActions = gameState.getLegalActions(agent)
+        if Directions.STOP in legalActions:
+            legalActions.remove(Directions.STOP)
+
+        # max depth reached or no valid actions left, return eval func
+        if depth == self.getTreeDepth() or not legalActions:
+            return self._evaluationFunction(gameState)
+
+        values = []
+        expectedValue = None
+        # find all values for legal moves
+        for action in legalActions:
+            successorGameState = gameState.generateSuccessor(agent, action)
+            nextAgent = (agent + 1) % gameState.getNumAgents()
+            nextDepth = depth + 1 if nextAgent == 0 else depth
+
+            value = self.expectimaxValue(
+                successorGameState, nextAgent, nextDepth)
+            values.append(value)
+
+        # return max value for pacman, expected for ghosts
+        if agent == 0:
+            expectedValue = max(values)
+        else:
+            expectedValue = (float(sum(values)) /
+                             float(len(legalActions)))
+
+        return expectedValue
 
 
 def betterEvaluationFunction(currentGameState):
