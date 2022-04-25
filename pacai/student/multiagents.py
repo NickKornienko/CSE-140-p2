@@ -4,6 +4,7 @@ import random
 from pacai.agents.base import BaseAgent
 from pacai.agents.search.multiagent import MultiAgentSearchAgent
 from pacai.core.distance import manhattan
+from pacai.core.directions import Directions
 
 
 class ReflexAgent(BaseAgent):
@@ -122,14 +123,19 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         Maximize for pacman's turn
         """
+        legalActions = gameState.getLegalActions(agent)
+
+        if Directions.STOP in legalActions:
+            legalActions.remove(Directions.STOP)
+
         # max depth reached or no valid actions left, return eval func
-        if depth == self.getTreeDepth() or not gameState.getLegalActions(agent):
+        if depth == self.getTreeDepth() or not legalActions:
             return self._evaluationFunction(gameState), None
 
         bestValue = -inf
         bestAction = None
         # find action with max value
-        for action in gameState.getLegalActions(agent):
+        for action in legalActions:
             successorGameState = gameState.generateSuccessor(agent, action)
             nextAgent = (agent + 1) % gameState.getNumAgents()
 
@@ -150,14 +156,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         Minimize for ghosts' turn
         """
+        legalActions = gameState.getLegalActions(agent)
+        if Directions.STOP in legalActions:
+            legalActions.remove(Directions.STOP)
+
         # max depth reached or no valid actions left, return eval func
-        if depth == self.getTreeDepth() or not gameState.getLegalActions(agent):
+        if depth == self.getTreeDepth() or not legalActions:
             return self._evaluationFunction(gameState), None
 
         bestValue = inf
         bestAction = None
         # find action with max value
-        for action in gameState.getLegalActions(agent):
+        for action in legalActions:
             successorGameState = gameState.generateSuccessor(agent, action)
             nextAgent = (agent + 1) % gameState.getNumAgents()
 
