@@ -3,7 +3,7 @@ import random
 
 from pacai.agents.base import BaseAgent
 from pacai.agents.search.multiagent import MultiAgentSearchAgent
-from pacai.core.distance import manhattan, maze
+from pacai.core.distance import manhattan
 from pacai.core.directions import Directions
 
 
@@ -354,7 +354,8 @@ def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable evaluation function.
 
-    DESCRIPTION: < write something here so we know what you did >
+    DESCRIPTION: Similar to first eval function, however this one accounts for
+    Capsules sinces they give more pts than regular food
     """
 
     position = currentGameState.getPacmanPosition()
@@ -382,8 +383,8 @@ def betterEvaluationFunction(currentGameState):
     for food in foodList:
         foodDistances.append(manhattan(position, food))
 
-    # consider capsules first as they have a higher value
-    if capsuleDistances:
+    # consider capsules first as they have higher values
+    if False:
         distances = capsuleDistances
     else:
         distances = foodDistances
