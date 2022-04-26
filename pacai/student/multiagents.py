@@ -354,12 +354,12 @@ def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable evaluation function.
 
-    DESCRIPTION: 
+    DESCRIPTION:
 
-    The function takes several factors into account. 
+    The function takes several factors into account.
 
     It will return better values for states that have a lower distance to a nearest food to guide
-    pacman to nearest food. 
+    pacman to nearest food.
 
     It gives large bonuses for eating food to offset
     penalties for being far from food after eating a pellet.
