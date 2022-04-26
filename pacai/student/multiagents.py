@@ -354,8 +354,21 @@ def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable evaluation function.
 
-    DESCRIPTION: Similar to first eval function, however this one accounts for
-    Capsules sinces they give more pts than regular food
+    DESCRIPTION: 
+
+    The function takes several factors into account. 
+
+    It will return better values for states that have a lower distance to a nearest food to guide
+    pacman to nearest food. 
+
+    It gives large bonuses for eating food to offset
+    penalties for being far from food after eating a pellet.
+
+    It gives very large bonuses for eating capsules since they give
+    5x more pts than regular pellets, and allows eating ghosts which also
+    gives a large number of pts.
+
+    It maximizes the penalty for running into ghosts unless they are scared.
     """
 
     position = currentGameState.getPacmanPosition()
@@ -365,38 +378,29 @@ def betterEvaluationFunction(currentGameState):
 
     # find distances to each ghost
     ghostDistances = []
+    scaredTimer = 0
     for ghost in ghosts:
+        scaredTimer = ghost._scaredTimer
         ghostDistances.append(manhattan(position, ghost._position))
 
     # finished eating food, done
     if not foodList:
         return currentGameState.getScore()
 
-    # find distances to capsules
-    capsuleDistances = []
-    for capsule in capsules:
-        capsuleDistances.append(manhattan(position, capsule))
-
     # find the distance to the closest food and return it as eval
-    # distance is negated since smaller numbers are defined as better options
     foodDistances = []
     for food in foodList:
         foodDistances.append(manhattan(position, food))
 
-    # consider capsules first as they have higher values
-    if False:
-        distances = capsuleDistances
-    else:
-        distances = foodDistances
+    eval = min(foodDistances)
 
-    eval = -min(distances)
+    # avoid running into ghosts at all costs unless scared
+    if scaredTimer < 1:
+        for ghostDistance in ghostDistances:
+            if ghostDistance < 1:
+                eval = 999999
 
-    # avoid running into ghosts at all costs
-    for ghostDistance in ghostDistances:
-        if ghostDistance < 1:
-            eval = -999999
-
-    return currentGameState.getScore() + eval
+    return currentGameState.getScore() - eval - (50 * len(capsules)) - (10 * len(foodList))
 
 
 class ContestAgent(MultiAgentSearchAgent):
